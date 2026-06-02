@@ -49,6 +49,8 @@ class ReminderListScreen extends StatelessWidget {
             itemCount: reminders.length,
             itemBuilder: (context, index) {
               final reminder = reminders[index].data();
+              final date = reminder['date'] as String? ?? 'Sin fecha';
+              final time = reminder['time'] as String? ?? 'Sin hora';
 
               return Card(
                 margin: const EdgeInsets.all(10),
@@ -58,7 +60,7 @@ class ReminderListScreen extends StatelessWidget {
                     color: Colors.blue,
                   ),
                   title: Text(reminder['title'] as String? ?? 'Sin título'),
-                  subtitle: Text('Fecha: ${reminder['date'] ?? 'Sin fecha'}'),
+                  subtitle: Text('Fecha: $date · Hora: $time'),
                 ),
               );
             },
