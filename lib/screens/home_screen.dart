@@ -11,6 +11,7 @@ class HomeScreen extends StatelessWidget {
   final AuthService authService = AuthService();
 
   Future<void> _logout() async {
+    FocusManager.instance.primaryFocus?.unfocus();
     await authService.logout();
   }
 

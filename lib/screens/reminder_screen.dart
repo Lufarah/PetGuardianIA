@@ -9,57 +9,49 @@ class ReminderScreen extends StatefulWidget {
 }
 
 class _ReminderScreenState extends State<ReminderScreen> {
+  final TextEditingController eventController = TextEditingController();
+  final Map<DateTime, List<String>> events = {};
+
   DateTime selectedDay = DateTime.now();
   DateTime focusedDay = DateTime.now();
-
-  final Map<DateTime, List<String>> events = {};
+  bool isAddingEvent = false;
 
   DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
 
-  void addEvent(String event) {
-    final day = _dateOnly(selectedDay);
+  @override
+  void dispose() {
+    eventController.dispose();
+    super.dispose();
+  }
+
+  void _toggleEventForm() {
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() {
-      events.putIfAbsent(day, () => []).add(event);
+      isAddingEvent = !isAddingEvent;
+      if (!isAddingEvent) {
+        eventController.clear();
+      }
     });
   }
 
-  Future<void> _showAddEventDialog() async {
-    final controller = TextEditingController();
+  void _saveEvent() {
+    final event = eventController.text.trim();
 
-    try {
-      final event = await showDialog<String>(
-        context: context,
-        builder: (dialogContext) {
-          return AlertDialog(
-            title: const Text('Agregar evento'),
-            content: TextField(
-              controller: controller,
-              autofocus: true,
-              decoration: const InputDecoration(
-                hintText: 'Veterinario, peluquería...',
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancelar'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(dialogContext, controller.text.trim());
-                },
-                child: const Text('Guardar'),
-              ),
-            ],
-          );
-        },
+    if (event.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Escribe un recordatorio.')),
       );
-
-      if (!mounted || event == null || event.isEmpty) return;
-      addEvent(event);
-    } finally {
-      controller.dispose();
+      return;
     }
+
+    FocusManager.instance.primaryFocus?.unfocus();
+    final day = _dateOnly(selectedDay);
+
+    setState(() {
+      events.putIfAbsent(day, () => []).add(event);
+      eventController.clear();
+      isAddingEvent = false;
+    });
   }
 
   @override
@@ -73,8 +65,8 @@ class _ReminderScreenState extends State<ReminderScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.teal,
-        onPressed: _showAddEventDialog,
-        child: const Icon(Icons.add),
+        onPressed: _toggleEventForm,
+        child: Icon(isAddingEvent ? Icons.close : Icons.add),
       ),
       body: Column(
         children: [
@@ -85,6 +77,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
             selectedDayPredicate: (day) => isSameDay(selectedDay, day),
             eventLoader: (day) => events[_dateOnly(day)] ?? [],
             onDaySelected: (selected, focused) {
+              FocusManager.instance.primaryFocus?.unfocus();
               setState(() {
                 selectedDay = selected;
                 focusedDay = focused;
@@ -101,7 +94,37 @@ class _ReminderScreenState extends State<ReminderScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: isAddingEvent
+                ? Padding(
+                    key: const ValueKey('event-form'),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: eventController,
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (_) => _saveEvent(),
+                            decoration: const InputDecoration(
+                              labelText: 'Nuevo recordatorio',
+                              hintText: 'Veterinario, peluquería...',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        FilledButton(
+                          onPressed: _saveEvent,
+                          child: const Text('Guardar'),
+                        ),
+                      ],
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+          const SizedBox(height: 8),
           const Text(
             'Eventos del día',
             style: TextStyle(
