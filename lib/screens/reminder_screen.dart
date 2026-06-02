@@ -26,39 +26,40 @@ class _ReminderScreenState extends State<ReminderScreen> {
   Future<void> _showAddEventDialog() async {
     final controller = TextEditingController();
 
-    await showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Agregar evento'),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: 'Veterinario, peluquería...',
+    try {
+      final event = await showDialog<String>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text('Agregar evento'),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: 'Veterinario, peluquería...',
+              ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final event = controller.text.trim();
-                if (event.isNotEmpty) {
-                  addEvent(event);
-                }
-                Navigator.pop(context);
-              },
-              child: const Text('Guardar'),
-            ),
-          ],
-        );
-      },
-    );
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext, controller.text.trim());
+                },
+                child: const Text('Guardar'),
+              ),
+            ],
+          );
+        },
+      );
 
-    controller.dispose();
+      if (!mounted || event == null || event.isEmpty) return;
+      addEvent(event);
+    } finally {
+      controller.dispose();
+    }
   }
 
   @override
