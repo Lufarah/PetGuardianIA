@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'add_pet_screen.dart';
 import 'chat_screen.dart';
-import 'login_screen.dart';
 import 'reminder_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -11,15 +10,8 @@ class HomeScreen extends StatelessWidget {
 
   final AuthService authService = AuthService();
 
-  Future<void> _logout(BuildContext context) async {
+  Future<void> _logout() async {
     await authService.logout();
-    if (!context.mounted) return;
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-      (route) => false,
-    );
   }
 
   @override
@@ -30,7 +22,7 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: Colors.teal,
         actions: [
           IconButton(
-            onPressed: () => _logout(context),
+            onPressed: _logout,
             icon: const Icon(Icons.logout),
           ),
         ],
