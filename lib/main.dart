@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/splash_screen.dart';
+import 'services/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +15,12 @@ Future<void> main() async {
     await Firebase.initializeApp();
   } catch (_) {
     firebaseReady = false;
+  }
+
+  try {
+    await NotificationService.instance.initialize();
+  } catch (_) {
+    // La app puede continuar aunque el sistema no permita notificaciones.
   }
 
   runApp(PetGuardianAI(firebaseReady: firebaseReady));
