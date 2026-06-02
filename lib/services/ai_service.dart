@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 class AIService {
 
   final String apiKey =
-      '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';
+      '';
 
   Future<String> askAI(String message) async {
 
