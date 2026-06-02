@@ -29,6 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (!_validateCredentials(email, password)) return;
 
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => isLoading = true);
     final result = await authService.loginUser(email: email, password: password);
 
@@ -46,6 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (!_validateCredentials(email, password)) return;
 
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => isLoading = true);
     final result = await authService.registerUser(
       email: email,
